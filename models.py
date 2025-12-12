@@ -61,6 +61,7 @@ class ScheduledWorkout(db.Model):
     workout_type = db.relationship('WorkoutType', backref='scheduled_workouts')
     
     def __repr__(self):
+        return f'<ScheduledWorkout {self.workout_type_id} - {self.scheduled_date}>'
 
 class Exercise(db.Model):
     __tablename__ = 'exercises'
