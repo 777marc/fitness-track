@@ -58,12 +58,20 @@ endblock %} {% block content %}
                       <i
                         class="bi bi-{{ 'check-circle-fill text-success' if workout.completed else 'circle' }}"
                       ></i>
-                      {{ workout.workout_type.name }}
+                      {{ workout.get_name() }} {% if workout.custom_workout %}
+                      <span class="badge bg-info text-dark ms-1">Custom</span>
+                      {% endif %}
                     </h6>
-                    {% if workout.workout_type.default_duration %}
+                    {% if workout.workout_type and
+                    workout.workout_type.default_duration %}
                     <small class="text-muted">
                       <i class="bi bi-clock"></i> {{
                       workout.workout_type.default_duration }} min
+                    </small>
+                    {% elif workout.custom_workout %}
+                    <small class="text-muted">
+                      <i class="bi bi-list-ol"></i> {{
+                      workout.custom_workout.exercises|length }} exercises
                     </small>
                     {% endif %} {% if workout.notes %}
                     <p class="mb-0 small text-muted">

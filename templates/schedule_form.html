@@ -21,7 +21,22 @@ endblock %} {% block content %}
             </div>
             {% endif %}
             <small class="form-text text-muted"
-              >Select the type of workout you want to schedule</small
+              >Select a pre-defined workout type</small
+            >
+          </div>
+
+          <div class="mb-3">
+            {{ form.custom_workout.label(class="form-label") }} {{
+            form.custom_workout(class="form-select" + (" is-invalid" if
+            form.custom_workout.errors else "")) }} {% if
+            form.custom_workout.errors %}
+            <div class="invalid-feedback">
+              {% for error in form.custom_workout.errors %} {{ error }} {%
+              endfor %}
+            </div>
+            {% endif %}
+            <small class="form-text text-muted"
+              >Or select one of your custom workout plans</small
             >
           </div>
 

@@ -26,6 +26,8 @@ class WorkoutForm(FlaskForm):
 
 class ScheduledWorkoutForm(FlaskForm):
     workout_type = SelectField('Workout Type', coerce=int, validators=[DataRequired()])
+    custom_workout = SelectField('Or Custom Workout', coerce=int)
     scheduled_date = DateField('Scheduled Date', format='%Y-%m-%d', default=datetime.utcnow().date, validators=[DataRequired()])
     notes = TextAreaField('Notes')
+    submit = SubmitField('Schedule Workout')
     submit = SubmitField('Schedule Workout')

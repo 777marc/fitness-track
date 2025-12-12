@@ -203,11 +203,25 @@ def add_scheduled_workout():
     
     # Populate workout types
     workout_types = WorkoutType.query.all()
-    form.workout_type.choices = [(wt.id, wt.name) for wt in workout_types]
+    form.workout_type.choices = [(0, '-- Select Workout Type --')] + [(wt.id, wt.name) for wt in workout_types]
+    
+    # Populate custom workouts
+    custom_workouts = CustomWorkout.query.filter_by(user_id=current_user.id).all()
+    form.custom_workout.choices = [(0, '-- Select Custom Workout --')] + [(cw.id, cw.name) for cw in custom_workouts]
     
     if form.validate_on_submit():
+        # Use custom workout if selected, otherwise use workout type
+        workout_type_id = form.workout_type.data if form.workout_type.data != 0 else None
+        custom_workout_id = form.custom_workout.data if form.custom_workout.data != 0 else None
+        
+        # Must select either workout type or custom workout
+        if not workout_type_id and not custom_workout_id:
+            flash('Please select either a workout type or a custom workout.', 'danger')
+            return render_template('schedule_form.html', form=form, title='Schedule Workout')
+        
         scheduled_workout = ScheduledWorkout(
-            workout_type_id=form.workout_type.data,
+            workout_type_id=workout_type_id,
+            custom_workout_id=custom_workout_id,
             scheduled_date=form.scheduled_date.data,
             notes=form.notes.data,
             user_id=current_user.id
@@ -262,11 +276,16 @@ def init_workout_types():
         ]
         db.session.add_all(default_types)
         db.session.commit()
+
 def load_exercises_from_excel():
     """Load exercises from Excel file into database"""
     if Exercise.query.count() == 0:
-        excel_path = os.path.join(os.path.dirname(__file__), 'data', 'Comprehensive_Exercise_List.xlsx')
+        # Get the absolute path to the Excel file
+        base_dir = os.path.abspath(os.path.dirname(__file__))
+        excel_path = os.path.join(base_dir, 'data', 'Comprehensive_Exercise_List.xlsx')
+        
         if os.path.exists(excel_path):
+            print(f"Loading exercises from: {excel_path}")
             df = pd.read_excel(excel_path)
             exercises = []
             for _, row in df.iterrows():
