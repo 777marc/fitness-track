@@ -4,7 +4,11 @@ endblock %} {% block content %}
   <div class="col-12">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2><i class="bi bi-calendar-week"></i> Weekly Workout Schedule</h2>
-      <a href="{{ url_for('add_scheduled_workout') }}" class="btn btn-primary">
+      <a
+        href="{{ url_for('add_scheduled_workout') }}"
+        class="btn"
+        style="background-color: #001f3f; color: white"
+      >
         <i class="bi bi-plus-circle"></i> Schedule Workout
       </a>
     </div>
