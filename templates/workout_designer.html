@@ -1,0 +1,408 @@
+{% extends "base.html" %} {% block title %}Workout Designer - Fitness Tracker{%
+endblock %} {% block content %}
+<div class="row">
+  <div class="col-12">
+    <h2 class="mb-4"><i class="bi bi-hammer"></i> Custom Workout Designer</h2>
+
+    <!-- My Custom Workouts -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="bi bi-collection"></i> My Custom Workouts
+        </h5>
+      </div>
+      <div class="card-body">
+        {% if custom_workouts %}
+        <div class="row">
+          {% for workout in custom_workouts %}
+          <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card h-100">
+              <div class="card-body">
+                <h6 class="card-title">{{ workout.name }}</h6>
+                <p class="card-text small text-muted">
+                  {{ workout.description[:50] + '...' if workout.description and
+                  workout.description|length > 50 else workout.description }}
+                </p>
+                <p class="small text-muted mb-2">
+                  <i class="bi bi-list-ol"></i> {{ workout.exercises|length }}
+                  exercises
+                </p>
+                <div class="d-flex gap-2">
+                  <a
+                    href="{{ url_for('view_custom_workout', id=workout.id) }}"
+                    class="btn btn-sm btn-primary"
+                  >
+                    <i class="bi bi-eye"></i> View
+                  </a>
+                  <form
+                    method="POST"
+                    action="{{ url_for('delete_custom_workout', id=workout.id) }}"
+                    style="display: inline"
+                  >
+                    <button
+                      type="submit"
+                      class="btn btn-sm btn-danger"
+                      onclick="return confirm('Delete this workout?');"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No custom workouts yet. Create one below!</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Workout Builder -->
+    <div class="row">
+      <!-- Exercise Library -->
+      <div class="col-lg-6 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-search"></i> Exercise Library</h5>
+          </div>
+          <div class="card-body">
+            <!-- Filters -->
+            <div class="mb-3">
+              <input
+                type="text"
+                id="searchExercise"
+                class="form-control mb-2"
+                placeholder="Search exercises..."
+              />
+
+              <select id="filterCategory" class="form-select mb-2">
+                <option value="">All Categories</option>
+                {% for category in categories %}
+                <option value="{{ category }}">{{ category }}</option>
+                {% endfor %}
+              </select>
+
+              <select id="filterDifficulty" class="form-select mb-2">
+                <option value="">All Difficulties</option>
+                {% for difficulty in difficulties %}
+                <option value="{{ difficulty }}">{{ difficulty }}</option>
+                {% endfor %}
+              </select>
+
+              <select id="filterEquipment" class="form-select mb-2">
+                <option value="">All Equipment</option>
+                {% for equip in equipment_list %}
+                <option value="{{ equip }}">{{ equip }}</option>
+                {% endfor %}
+              </select>
+
+              <button id="btnSearch" class="btn btn-primary w-100">
+                <i class="bi bi-funnel"></i> Apply Filters
+              </button>
+            </div>
+
+            <!-- Exercise List -->
+            <div id="exerciseList" style="max-height: 500px; overflow-y: auto">
+              <p class="text-muted">Apply filters to see exercises</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workout Builder -->
+      <div class="col-lg-6 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="bi bi-list-check"></i> Build Your Workout
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="workoutName" class="form-label">Workout Name</label>
+              <input
+                type="text"
+                id="workoutName"
+                class="form-control"
+                placeholder="e.g., Upper Body Blast"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="workoutDescription" class="form-label"
+                >Description</label
+              >
+              <textarea
+                id="workoutDescription"
+                class="form-control"
+                rows="2"
+                placeholder="Brief description of your workout..."
+              ></textarea>
+            </div>
+
+            <div
+              id="selectedExercises"
+              style="max-height: 400px; overflow-y: auto"
+            >
+              <p class="text-muted">
+                No exercises added yet. Click on exercises from the library to
+                add them.
+              </p>
+            </div>
+
+            <button id="btnSaveWorkout" class="btn btn-success w-100 mt-3">
+              <i class="bi bi-save"></i> Save Custom Workout
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .exercise-item {
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .exercise-item:hover {
+    background-color: #2a2a2a;
+    transform: translateX(5px);
+  }
+  .selected-exercise {
+    border-left: 3px solid #0d6efd;
+  }
+  .badge-difficulty-beginner {
+    background-color: #28a745;
+  }
+  .badge-difficulty-intermediate {
+    background-color: #ffc107;
+    color: #000;
+  }
+  .badge-difficulty-advanced {
+    background-color: #dc3545;
+  }
+</style>
+
+<script>
+  let selectedExercises = [];
+
+  document
+    .getElementById("btnSearch")
+    .addEventListener("click", searchExercises);
+  document
+    .getElementById("searchExercise")
+    .addEventListener("keypress", function (e) {
+      if (e.key === "Enter") searchExercises();
+    });
+
+  function searchExercises() {
+    const search = document.getElementById("searchExercise").value;
+    const category = document.getElementById("filterCategory").value;
+    const difficulty = document.getElementById("filterDifficulty").value;
+    const equipment = document.getElementById("filterEquipment").value;
+
+    const params = new URLSearchParams();
+    if (search) params.append("search", search);
+    if (category) params.append("category", category);
+    if (difficulty) params.append("difficulty", difficulty);
+    if (equipment) params.append("equipment", equipment);
+
+    fetch(`/api/exercises?${params.toString()}`)
+      .then((res) => res.json())
+      .then((exercises) => {
+        const listEl = document.getElementById("exerciseList");
+        if (exercises.length === 0) {
+          listEl.innerHTML = '<p class="text-muted">No exercises found</p>';
+          return;
+        }
+
+        listEl.innerHTML = exercises
+          .map(
+            (ex) => `
+                <div class="card mb-2 exercise-item" onclick="addExercise(${
+                  ex.id
+                }, '${ex.name.replace(/'/g, "\\'")}', '${ex.category}', '${
+              ex.muscle_groups
+            }', '${ex.difficulty}')">
+                    <div class="card-body p-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">${ex.name}</h6>
+                                <small class="text-muted">${
+                                  ex.muscle_groups || "N/A"
+                                }</small>
+                            </div>
+                            <span class="badge badge-difficulty-${ex.difficulty.toLowerCase()}">${
+              ex.difficulty
+            }</span>
+                        </div>
+                        <small class="text-muted"><i class="bi bi-tag"></i> ${
+                          ex.category
+                        } | <i class="bi bi-tools"></i> ${ex.equipment}</small>
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+      })
+      .catch((err) => console.error("Error fetching exercises:", err));
+  }
+
+  function addExercise(id, name, category, muscleGroups, difficulty) {
+    if (selectedExercises.find((ex) => ex.id === id)) {
+      alert("Exercise already added!");
+      return;
+    }
+
+    selectedExercises.push({
+      id: id,
+      name: name,
+      category: category,
+      muscleGroups: muscleGroups,
+      difficulty: difficulty,
+      sets: 3,
+      reps: 10,
+      duration: null,
+      notes: "",
+    });
+
+    updateSelectedExercises();
+  }
+
+  function removeExercise(id) {
+    selectedExercises = selectedExercises.filter((ex) => ex.id !== id);
+    updateSelectedExercises();
+  }
+
+  function moveExercise(index, direction) {
+    if (direction === "up" && index > 0) {
+      [selectedExercises[index], selectedExercises[index - 1]] = [
+        selectedExercises[index - 1],
+        selectedExercises[index],
+      ];
+    } else if (direction === "down" && index < selectedExercises.length - 1) {
+      [selectedExercises[index], selectedExercises[index + 1]] = [
+        selectedExercises[index + 1],
+        selectedExercises[index],
+      ];
+    }
+    updateSelectedExercises();
+  }
+
+  function updateSelectedExercises() {
+    const container = document.getElementById("selectedExercises");
+
+    if (selectedExercises.length === 0) {
+      container.innerHTML =
+        '<p class="text-muted">No exercises added yet. Click on exercises from the library to add them.</p>';
+      return;
+    }
+
+    container.innerHTML = selectedExercises
+      .map(
+        (ex, idx) => `
+        <div class="card mb-2 selected-exercise">
+            <div class="card-body p-2">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0">${idx + 1}. ${ex.name}</h6>
+                        <small class="text-muted">${ex.muscleGroups}</small>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-secondary" onclick="moveExercise(${idx}, 'up')" ${
+          idx === 0 ? "disabled" : ""
+        }>
+                            <i class="bi bi-arrow-up"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="moveExercise(${idx}, 'down')" ${
+          idx === selectedExercises.length - 1 ? "disabled" : ""
+        }>
+                            <i class="bi bi-arrow-down"></i>
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="removeExercise(${
+                          ex.id
+                        })">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="row g-2">
+                    <div class="col-4">
+                        <input type="number" class="form-control form-control-sm" placeholder="Sets" value="${
+                          ex.sets || ""
+                        }" 
+                               onchange="selectedExercises[${idx}].sets = parseInt(this.value) || null">
+                    </div>
+                    <div class="col-4">
+                        <input type="number" class="form-control form-control-sm" placeholder="Reps" value="${
+                          ex.reps || ""
+                        }"
+                               onchange="selectedExercises[${idx}].reps = parseInt(this.value) || null">
+                    </div>
+                    <div class="col-4">
+                        <input type="number" class="form-control form-control-sm" placeholder="Min" value="${
+                          ex.duration || ""
+                        }"
+                               onchange="selectedExercises[${idx}].duration = parseInt(this.value) || null">
+                    </div>
+                </div>
+            </div>
+        </div>
+    `
+      )
+      .join("");
+  }
+
+  document
+    .getElementById("btnSaveWorkout")
+    .addEventListener("click", function () {
+      const name = document.getElementById("workoutName").value.trim();
+      const description = document
+        .getElementById("workoutDescription")
+        .value.trim();
+
+      if (!name) {
+        alert("Please enter a workout name");
+        return;
+      }
+
+      if (selectedExercises.length === 0) {
+        alert("Please add at least one exercise");
+        return;
+      }
+
+      const data = {
+        name: name,
+        description: description,
+        exercises: selectedExercises,
+      };
+
+      fetch("/workout-designer/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            alert(data.message);
+            window.location.reload();
+          } else {
+            alert("Error: " + data.error);
+          }
+        })
+        .catch((err) => {
+          console.error("Error:", err);
+          alert("Error saving workout");
+        });
+    });
+
+  // Load all exercises on page load
+  searchExercises();
+</script>
+{% endblock %}

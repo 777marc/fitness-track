@@ -1,10 +1,11 @@
-from flask import Flask, render_template, redirect, url_for, flash, request
+from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Workout, WorkoutType, ScheduledWorkout
+from models import db, User, Workout, WorkoutType, ScheduledWorkout, Exercise, CustomWorkout, CustomWorkoutExercise
 from forms import LoginForm, RegisterForm, WorkoutForm, ScheduledWorkoutForm
 from datetime import datetime, timedelta
 import os
+import pandas as pd
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -261,9 +262,151 @@ def init_workout_types():
         ]
         db.session.add_all(default_types)
         db.session.commit()
+def load_exercises_from_excel():
+    """Load exercises from Excel file into database"""
+    if Exercise.query.count() == 0:
+        excel_path = os.path.join(os.path.dirname(__file__), 'data', 'Comprehensive_Exercise_List.xlsx')
+        if os.path.exists(excel_path):
+            df = pd.read_excel(excel_path)
+            exercises = []
+            for _, row in df.iterrows():
+                exercise = Exercise(
+                    name=row['Exercise'],
+                    category=row['Category'],
+                    primary_muscle_groups=row['Primary Muscle Groups'],
+                    equipment=row['Equipment'],
+                    difficulty=row['Difficulty'],
+                    workout_goal=row['Workout Goal'],
+                    location=row['Location']
+                )
+                exercises.append(exercise)
+            db.session.add_all(exercises)
+            db.session.commit()
+            print(f"Loaded {len(exercises)} exercises from Excel file")
+
+@app.route('/workout-designer')
+@login_required
+def workout_designer():
+    categories = db.session.query(Exercise.category).distinct().all()
+    categories = [c[0] for c in categories]
+    
+    difficulties = db.session.query(Exercise.difficulty).distinct().all()
+    difficulties = [d[0] for d in difficulties]
+    
+    equipment = db.session.query(Exercise.equipment).distinct().all()
+    equipment = [e[0] for e in equipment]
+    
+    custom_workouts = CustomWorkout.query.filter_by(user_id=current_user.id).order_by(CustomWorkout.created_at.desc()).all()
+    
+    return render_template('workout_designer.html', 
+                         categories=categories,
+                         difficulties=difficulties,
+                         equipment_list=equipment,
+                         custom_workouts=custom_workouts)
+
+@app.route('/api/exercises')
+@login_required
+def get_exercises():
+    category = request.args.get('category')
+    difficulty = request.args.get('difficulty')
+    equipment = request.args.get('equipment')
+    search = request.args.get('search', '').lower()
+    
+    query = Exercise.query
+    
+    if category:
+        query = query.filter_by(category=category)
+    if difficulty:
+        query = query.filter_by(difficulty=difficulty)
+    if equipment:
+        query = query.filter_by(equipment=equipment)
+    if search:
+        query = query.filter(Exercise.name.ilike(f'%{search}%'))
+    
+    exercises = query.all()
+    
+    return jsonify([{
+        'id': ex.id,
+        'name': ex.name,
+        'category': ex.category,
+        'muscle_groups': ex.primary_muscle_groups,
+        'equipment': ex.equipment,
+        'difficulty': ex.difficulty,
+        'goal': ex.workout_goal,
+        'location': ex.location
+    } for ex in exercises])
+
+@app.route('/workout-designer/save', methods=['POST'])
+@login_required
+def save_custom_workout():
+    data = request.get_json()
+    
+    workout_name = data.get('name')
+    workout_description = data.get('description', '')
+    exercises = data.get('exercises', [])
+    
+    if not workout_name or not exercises:
+        return jsonify({'error': 'Workout name and exercises are required'}), 400
+    
+    custom_workout = CustomWorkout(
+        name=workout_name,
+        description=workout_description,
+        user_id=current_user.id
+    )
+    db.session.add(custom_workout)
+    db.session.flush()
+    
+    for idx, ex_data in enumerate(exercises):
+        workout_exercise = CustomWorkoutExercise(
+            custom_workout_id=custom_workout.id,
+            exercise_id=ex_data['id'],
+            sets=ex_data.get('sets'),
+            reps=ex_data.get('reps'),
+            duration=ex_data.get('duration'),
+            order=idx,
+            notes=ex_data.get('notes', '')
+        )
+        db.session.add(workout_exercise)
+    
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': 'Custom workout saved successfully!',
+        'workout_id': custom_workout.id
+    })
+
+@app.route('/workout-designer/<int:id>')
+@login_required
+def view_custom_workout(id):
+    workout = CustomWorkout.query.get_or_404(id)
+    
+    if workout.user_id != current_user.id:
+        flash('You can only view your own workouts.', 'danger')
+        return redirect(url_for('workout_designer'))
+    
+    exercises = CustomWorkoutExercise.query.filter_by(custom_workout_id=id).order_by(CustomWorkoutExercise.order).all()
+    
+    return render_template('custom_workout_view.html', workout=workout, exercises=exercises)
+
+@app.route('/workout-designer/<int:id>/delete', methods=['POST'])
+@login_required
+def delete_custom_workout(id):
+    workout = CustomWorkout.query.get_or_404(id)
+    
+    if workout.user_id != current_user.id:
+        flash('You can only delete your own workouts.', 'danger')
+        return redirect(url_for('workout_designer'))
+    
+    db.session.delete(workout)
+    db.session.commit()
+    flash('Custom workout deleted successfully!', 'success')
+    return redirect(url_for('workout_designer'))
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        init_workout_types()
+        load_exercises_from_excel
         init_workout_types()
     app.run(host='0.0.0.0', port=5000, debug=True)
