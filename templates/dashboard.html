@@ -13,6 +13,69 @@ endblock %} {% block content %}
       </a>
     </div>
 
+    <!-- Upcoming Scheduled Workouts -->
+    {% if upcoming_workouts %}
+    <div
+      class="card mb-4"
+      style="background-color: #1a1a1a; border-color: #001f3f"
+    >
+      <div class="card-header" style="background-color: #001f3f; color: white">
+        <h5 class="mb-0">
+          <i class="bi bi-calendar-check"></i> Upcoming Workouts (Next 7 Days)
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="list-group list-group-flush">
+          {% for scheduled in upcoming_workouts %}
+          <div
+            class="list-group-item d-flex justify-content-between align-items-center"
+            style="background-color: #2a2a2a; border-color: #3a3a3a"
+          >
+            <div>
+              <h6 class="mb-1">
+                <i
+                  class="bi bi-{{ 'check-circle-fill text-success' if scheduled.completed else 'circle' }}"
+                ></i>
+                {{ scheduled.get_name() }} {% if scheduled.custom_workout %}
+                <span class="badge bg-info">Custom</span>
+                {% endif %}
+              </h6>
+              <small class="text-muted">
+                <i class="bi bi-calendar3"></i> {{
+                scheduled.scheduled_date.strftime('%A, %B %d, %Y') }} {% if
+                scheduled.notes %} <br /><i class="bi bi-sticky"></i> {{
+                scheduled.notes[:50] + '...' if scheduled.notes|length > 50 else
+                scheduled.notes }} {% endif %}
+              </small>
+            </div>
+            <div>
+              {% if scheduled.custom_workout %}
+              <a
+                href="{{ url_for('view_custom_workout', id=scheduled.custom_workout_id) }}"
+                class="btn btn-sm btn-outline-info"
+                title="View Details"
+              >
+                <i class="bi bi-eye"></i>
+              </a>
+              {% endif %}
+              <a
+                href="{{ url_for('schedule') }}"
+                class="btn btn-sm btn-outline-light"
+                title="Go to Schedule"
+              >
+                <i class="bi bi-calendar3"></i>
+              </a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Past Workouts History -->
+    <h4 class="mb-3"><i class="bi bi-clock-history"></i> Workout History</h4>
+
     {% if workouts %}
     <div class="table-responsive">
       <table class="table table-striped table-hover">

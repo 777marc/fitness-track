@@ -85,7 +85,17 @@ def logout():
 @login_required
 def dashboard():
     workouts = Workout.query.filter_by(user_id=current_user.id).order_by(Workout.date.desc()).all()
-    return render_template('dashboard.html', workouts=workouts)
+    
+    # Get upcoming scheduled workouts for the next 7 days
+    today = datetime.utcnow().date()
+    end_date = today + timedelta(days=7)
+    upcoming_workouts = ScheduledWorkout.query.filter(
+        ScheduledWorkout.user_id == current_user.id,
+        ScheduledWorkout.scheduled_date >= today,
+        ScheduledWorkout.scheduled_date <= end_date
+    ).order_by(ScheduledWorkout.scheduled_date).all()
+    
+    return render_template('dashboard.html', workouts=workouts, upcoming_workouts=upcoming_workouts)
 
 @app.route('/workout/new', methods=['GET', 'POST'])
 @login_required
