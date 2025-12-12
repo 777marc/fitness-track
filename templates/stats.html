@@ -1,0 +1,71 @@
+{% extends "base.html" %} {% block title %}Statistics - Fitness Tracker{%
+endblock %} {% block content %}
+<div class="row">
+  <div class="col-12">
+    <h2 class="mb-4"><i class="bi bi-bar-chart"></i> Fitness Statistics</h2>
+
+    <div class="row mb-4">
+      <div class="col-md-4 mb-3">
+        <div class="card text-center bg-primary text-white">
+          <div class="card-body">
+            <h3 class="card-title">{{ stats.total_workouts }}</h3>
+            <p class="card-text">Total Workouts</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-3">
+        <div class="card text-center bg-success text-white">
+          <div class="card-body">
+            <h3 class="card-title">{{ stats.total_duration }}</h3>
+            <p class="card-text">Total Minutes</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-3">
+        <div class="card text-center bg-danger text-white">
+          <div class="card-body">
+            <h3 class="card-title">{{ stats.total_calories }}</h3>
+            <p class="card-text">Total Calories Burned</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if workouts %}
+    <h4 class="mb-3">Recent Workouts</h4>
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead class="table-dark">
+          <tr>
+            <th>Date</th>
+            <th>Exercise</th>
+            <th>Duration (min)</th>
+            <th>Calories</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for workout in workouts[:10] %}
+          <tr>
+            <td>{{ workout.date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ workout.exercise }}</td>
+            <td>{{ workout.duration }}</td>
+            <td>{{ workout.calories }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+      <i class="bi bi-info-circle"></i> No workout data available yet.
+    </div>
+    {% endif %}
+
+    <div class="mt-4">
+      <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

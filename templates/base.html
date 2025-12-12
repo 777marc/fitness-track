@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Fitness Tracker{% endblock %}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+    />
+    <style>
+      :root[data-bs-theme="dark"] {
+        --bs-body-bg: #121212;
+        --bs-body-color: #e0e0e0;
+        --bs-card-bg: #1e1e1e;
+        --bs-border-color: #2d2d2d;
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background-color: var(--bs-body-bg);
+        color: var(--bs-body-color);
+      }
+
+      .content {
+        flex: 1;
+      }" style="background-color: #1a1a1a;">
+      <div class="container">
+        <a class="navbar-brand" href="{{ url_for('index') }}">
+          <i class="bi bi-heart-pulse text-primary
+      }
+
+      footer {
+        margin-top: auto;
+        background-color: #1a1a1a !important;
+      }
+
+      .card {
+        background-color: var(--bs-card-bg);
+        border-color: var(--bs-border-color);
+      }
+
+      .table {
+        --bs-table-bg: #1e1e1e;
+        --bs-table-striped-bg: #252525;
+        --bs-table-hover-bg: #2a2a2a;
+        color: var(--bs-body-color);
+      }
+
+      .table-dark {
+        --bs-table-bg: #2d2d2d;
+        --bs-table-border-color: #404040;
+      }
+
+      .form-control, .form-select {
+        background-color: #2d2d2d;
+        border-color: #404040;
+        color: var(--bs-body-color);
+      }
+
+      .form-control:focus, .form-select:focus {
+        background-color: #2d2d2d;
+        border-color: #0d6efd;
+        color: var(--bs-body-color);
+      }
+
+      .btn-outline-secondary {
+        --bs-btn-color: #e0e0e0;
+        --bs-btn-border-color: #404040;
+        --bs-btn-hover-bg: #404040;
+        --bs-btn-hover-border-color: #505050;
+      }
+
+      .bg-light {
+        background-color: #2d2d2d !important;
+      }
+
+      .text-muted {
+        color: #9e9e9e !important;
+      }
+
+      footer p {
+        color: #9e9e9e !important;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container">
+        <a class="navbar-brand" href="{{ url_for('index') }}">
+          <i class="bi bi-heart-pulse"></i> Fitness Tracker
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            {% if current_user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('dashboard') }}">
+                <i class="bi bi-speedometer2"></i> Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('schedule') }}">
+                <i class="bi bi-calendar-week"></i> Schedule
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('new_workout') }}">
+                <i class="bi bi-plus-circle"></i> Add Workout
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('stats') }}">
+                <i class="bi bi-bar-chart"></i> Statistics
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('logout') }}">
+                <i class="bi bi-box-arrow-right"></i> Logout
+              </a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('login') }}">
+                <i class="bi bi-box-arrow-in-right"></i> Login
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('register') }}">
+                <i class="bi bi-person-plus"></i> Register
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="content">
+      <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %} {% for category, message in messages %}
+        <div
+          class="alert alert-{{ category }} alert-dismissible fade show"
+          role="alert"
+        >
+          {{ message }}
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+          ></button>
+        </div>
+        {% endfor %} {% endif %} {% endwith %} {% block content %}{% endblock %}
+      </div>
+    </div>
+
+    <footer class="py-3 mt-5" style="background-color: #1a1a1a">
+      <div class="container text-center">
+        <p class="mb-0" style="color: #9e9e9e">
+          &copy; 2025 Fitness Tracker. Track your fitness journey.
+        </p>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,71 @@
+{% extends "base.html" %} {% block title %}Home - Fitness Tracker{% endblock %}
+{% block content %}
+<div class="row mt-5">
+  <div class="col-lg-8 mx-auto text-center">
+    <h1 class="display-4 mb-4">
+      <i class="bi bi-heart-pulse text-primary"></i> Welcome to Fitness Tracker
+    </h1>
+    <p class="lead mb-4">
+      Track your workouts, monitor your progress, and achieve your fitness
+      goals!
+    </p>
+
+    <div class="row mt-5">
+      <div class="col-md-4 mb-4">
+        <div class="card h-100">
+          <div class="card-body text-center">
+            <i
+              class="bi bi-journal-text text-primary"
+              style="font-size: 3rem"
+            ></i>
+            <h5 class="card-title mt-3">Log Workouts</h5>
+            <p class="card-text">
+              Record your exercises, duration, and calories burned.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="card h-100">
+          <div class="card-body text-center">
+            <i
+              class="bi bi-bar-chart-line text-primary"
+              style="font-size: 3rem"
+            ></i>
+            <h5 class="card-title mt-3">Track Progress</h5>
+            <p class="card-text">
+              Monitor your fitness journey with detailed statistics.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="card h-100">
+          <div class="card-body text-center">
+            <i class="bi bi-trophy text-primary" style="font-size: 3rem"></i>
+            <h5 class="card-title mt-3">Achieve Goals</h5>
+            <p class="card-text">
+              Stay motivated and reach your fitness objectives.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-5">
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg me-2">
+        <i class="bi bi-speedometer2"></i> Go to Dashboard
+      </a>
+      {% else %}
+      <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg me-2">
+        <i class="bi bi-person-plus"></i> Get Started
+      </a>
+      <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg">
+        <i class="bi bi-box-arrow-in-right"></i> Login
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

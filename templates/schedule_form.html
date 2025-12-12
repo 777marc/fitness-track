@@ -1,0 +1,57 @@
+{% extends "base.html" %} {% block title %}{{ title }} - Fitness Tracker{%
+endblock %} {% block content %}
+<div class="row mt-4">
+  <div class="col-md-8 mx-auto">
+    <div class="card">
+      <div class="card-body">
+        <h2 class="card-title mb-4">
+          <i class="bi bi-calendar-plus"></i> {{ title }}
+        </h2>
+        <form method="POST">
+          {{ form.hidden_tag() }}
+
+          <div class="mb-3">
+            {{ form.workout_type.label(class="form-label") }} {{
+            form.workout_type(class="form-select" + (" is-invalid" if
+            form.workout_type.errors else "")) }} {% if form.workout_type.errors
+            %}
+            <div class="invalid-feedback">
+              {% for error in form.workout_type.errors %} {{ error }} {% endfor
+              %}
+            </div>
+            {% endif %}
+            <small class="form-text text-muted"
+              >Select the type of workout you want to schedule</small
+            >
+          </div>
+
+          <div class="mb-3">
+            {{ form.scheduled_date.label(class="form-label") }} {{
+            form.scheduled_date(class="form-control" + (" is-invalid" if
+            form.scheduled_date.errors else "")) }} {% if
+            form.scheduled_date.errors %}
+            <div class="invalid-feedback">
+              {% for error in form.scheduled_date.errors %} {{ error }} {%
+              endfor %}
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            {{ form.notes.label(class="form-label") }} {{
+            form.notes(class="form-control", rows="4", placeholder="Optional
+            notes or reminders for this workout...") }}
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <a href="{{ url_for('schedule') }}" class="btn btn-secondary">
+              <i class="bi bi-arrow-left"></i> Cancel
+            </a>
+            {{ form.submit(class="btn btn-primary") }}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
