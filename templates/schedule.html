@@ -80,7 +80,16 @@ endblock %} {% block content %}
                     {% endif %}
                   </div>
                   <div class="btn-group btn-group-sm ms-2" role="group">
-                    {% if not workout.completed %}
+                    {% if workout.custom_workout %}
+                    <a
+                      href="{{ url_for('view_custom_workout', id=workout.custom_workout.id) }}"
+                      class="btn btn-sm"
+                      style="background-color: #001f3f; color: white"
+                      title="View workout details"
+                    >
+                      <i class="bi bi-eye"></i>
+                    </a>
+                    {% endif %} {% if not workout.completed %}
                     <form
                       method="POST"
                       action="{{ url_for('complete_scheduled_workout', id=workout.id) }}"
