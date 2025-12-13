@@ -53,6 +53,7 @@ class ScheduledWorkout(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     workout_type_id = db.Column(db.Integer, db.ForeignKey('workout_types.id'), nullable=True)
     custom_workout_id = db.Column(db.Integer, db.ForeignKey('custom_workouts.id'), nullable=True)
+    workout_id = db.Column(db.Integer, db.ForeignKey('workouts.id'), nullable=True)
     scheduled_date = db.Column(db.Date, nullable=False)
     notes = db.Column(db.Text)
     completed = db.Column(db.Boolean, default=False)
@@ -61,6 +62,7 @@ class ScheduledWorkout(db.Model):
     
     workout_type = db.relationship('WorkoutType', backref='scheduled_workouts')
     custom_workout = db.relationship('CustomWorkout', backref='scheduled_instances')
+    workout = db.relationship('Workout', backref='scheduled_workout', foreign_keys=[workout_id])
     
     def get_name(self):
         if self.custom_workout:

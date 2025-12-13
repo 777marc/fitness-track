@@ -65,6 +65,35 @@ endblock %} {% block content %}
               >
                 <i class="bi bi-calendar3"></i>
               </a>
+              {% if scheduled.completed %}
+              <form
+                method="POST"
+                action="{{ url_for('incomplete_scheduled_workout', id=scheduled.id) }}"
+                style="display: inline"
+              >
+                <button
+                  type="submit"
+                  class="btn btn-sm btn-outline-warning"
+                  title="Mark as Not Complete"
+                >
+                  <i class="bi bi-x-circle"></i>
+                </button>
+              </form>
+              {% else %}
+              <form
+                method="POST"
+                action="{{ url_for('complete_scheduled_workout', id=scheduled.id) }}"
+                style="display: inline"
+              >
+                <button
+                  type="submit"
+                  class="btn btn-sm btn-outline-success"
+                  title="Mark as Complete"
+                >
+                  <i class="bi bi-check-circle"></i>
+                </button>
+              </form>
+              {% endif %}
             </div>
           </div>
           {% endfor %}

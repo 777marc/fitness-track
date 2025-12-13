@@ -93,7 +93,21 @@ endblock %} {% block content %}
                     >
                       <i class="bi bi-eye"></i>
                     </a>
-                    {% endif %} {% if not workout.completed %}
+                    {% endif %} {% if workout.completed %}
+                    <form
+                      method="POST"
+                      action="{{ url_for('incomplete_scheduled_workout', id=workout.id) }}"
+                      style="display: inline"
+                    >
+                      <button
+                        type="submit"
+                        class="btn btn-sm btn-warning"
+                        title="Mark as not complete"
+                      >
+                        <i class="bi bi-x-circle"></i>
+                      </button>
+                    </form>
+                    {% else %}
                     <form
                       method="POST"
                       action="{{ url_for('complete_scheduled_workout', id=workout.id) }}"

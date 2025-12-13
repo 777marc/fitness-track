@@ -264,12 +264,66 @@ def complete_scheduled_workout(id):
     
     if scheduled_workout.user_id != current_user.id:
         flash('You can only complete your own scheduled workouts.', 'danger')
-        return redirect(url_for('schedule'))
+        return redirect(request.referrer or url_for('schedule'))
     
+    # Mark as completed
     scheduled_workout.completed = True
+    
+    # Create workout history entry if it doesn't exist
+    if not scheduled_workout.workout_id:
+        # Determine duration and calories
+        duration = 0
+        calories = 0
+        exercise_name = scheduled_workout.get_name()
+        
+        if scheduled_workout.workout_type:
+            duration = scheduled_workout.workout_type.default_duration or 30
+            calories = scheduled_workout.workout_type.default_calories or 200
+        elif scheduled_workout.custom_workout:
+            # Estimate based on number of exercises (assuming 5 min per exercise)
+            num_exercises = len(scheduled_workout.custom_workout.exercises)
+            duration = num_exercises * 5
+            calories = duration * 7  # Rough estimate: 7 calories per minute
+        
+        # Create workout entry
+        workout = Workout(
+            exercise=exercise_name,
+            duration=duration,
+            calories=calories,
+            notes=scheduled_workout.notes or f"Completed scheduled workout: {exercise_name}",
+            date=scheduled_workout.scheduled_date,
+            user_id=current_user.id
+        )
+        db.session.add(workout)
+        db.session.flush()  # Get the workout ID
+        scheduled_workout.workout_id = workout.id
+    
     db.session.commit()
-    flash('Workout marked as completed!', 'success')
-    return redirect(url_for('schedule'))
+    flash('Workout marked as completed and added to history!', 'success')
+    return redirect(request.referrer or url_for('schedule'))
+
+@app.route('/schedule/<int:id>/incomplete', methods=['POST'])
+@login_required
+def incomplete_scheduled_workout(id):
+    scheduled_workout = ScheduledWorkout.query.get_or_404(id)
+    
+    if scheduled_workout.user_id != current_user.id:
+        flash('You can only modify your own scheduled workouts.', 'danger')
+        return redirect(request.referrer or url_for('schedule'))
+    
+    # Mark as not complete
+    scheduled_workout.completed = False
+    
+    # Remove workout history entry if it exists
+    if scheduled_workout.workout_id:
+        workout = Workout.query.get(scheduled_workout.workout_id)
+        if workout:
+            db.session.delete(workout)
+        scheduled_workout.workout_id = None
+    
+    db.session.commit()
+    flash('Workout marked as not complete and removed from history.', 'info')
+    return redirect(request.referrer or url_for('schedule'))
 
 def init_workout_types():
     """Initialize default workout types if none exist"""
