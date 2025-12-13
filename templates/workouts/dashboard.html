@@ -5,7 +5,7 @@ endblock %} {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2><i class="bi bi-speedometer2"></i> My Workouts</h2>
       <a
-        href="{{ url_for('new_workout') }}"
+        href="{{ url_for('workouts.new_workout') }}"
         class="btn"
         style="background-color: #001f3f; color: white"
       >
@@ -51,7 +51,7 @@ endblock %} {% block content %}
             <div>
               {% if scheduled.custom_workout %}
               <a
-                href="{{ url_for('view_custom_workout', id=scheduled.custom_workout_id) }}"
+                href="{{ url_for('custom_workouts.view_custom_workout', id=scheduled.custom_workout_id) }}"
                 class="btn btn-sm btn-outline-info"
                 title="View Details"
               >
@@ -59,7 +59,7 @@ endblock %} {% block content %}
               </a>
               {% endif %}
               <a
-                href="{{ url_for('schedule') }}"
+                href="{{ url_for('schedule.schedule') }}"
                 class="btn btn-sm btn-outline-light"
                 title="Go to Schedule"
               >
@@ -68,7 +68,7 @@ endblock %} {% block content %}
               {% if scheduled.completed %}
               <form
                 method="POST"
-                action="{{ url_for('incomplete_scheduled_workout', id=scheduled.id) }}"
+                action="{{ url_for('schedule.incomplete_scheduled_workout', id=scheduled.id) }}"
                 style="display: inline"
               >
                 <button
@@ -82,7 +82,7 @@ endblock %} {% block content %}
               {% else %}
               <form
                 method="POST"
-                action="{{ url_for('complete_scheduled_workout', id=scheduled.id) }}"
+                action="{{ url_for('schedule.complete_scheduled_workout', id=scheduled.id) }}"
                 style="display: inline"
               >
                 <button
@@ -131,14 +131,14 @@ endblock %} {% block content %}
             </td>
             <td>
               <a
-                href="{{ url_for('edit_workout', id=workout.id) }}"
+                href="{{ url_for('workouts.edit_workout', id=workout.id) }}"
                 class="btn btn-sm btn-warning"
               >
                 <i class="bi bi-pencil"></i>
               </a>
               <form
                 method="POST"
-                action="{{ url_for('delete_workout', id=workout.id) }}"
+                action="{{ url_for('workouts.delete_workout', id=workout.id) }}"
                 style="display: inline"
               >
                 <button
@@ -158,7 +158,7 @@ endblock %} {% block content %}
     {% else %}
     <div class="alert alert-info text-center">
       <i class="bi bi-info-circle"></i> No workouts recorded yet.
-      <a href="{{ url_for('new_workout') }}" class="alert-link"
+      <a href="{{ url_for('workouts.new_workout') }}" class="alert-link"
         >Add your first workout</a
       >!
     </div>

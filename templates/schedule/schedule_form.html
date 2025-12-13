@@ -59,7 +59,10 @@ endblock %} {% block content %}
           </div>
 
           <div class="d-flex justify-content-between">
-            <a href="{{ url_for('schedule') }}" class="btn btn-secondary">
+            <a
+              href="{{ url_for('schedule.schedule') }}"
+              class="btn btn-secondary"
+            >
               <i class="bi bi-arrow-left"></i> Cancel
             </a>
             {{ form.submit(class="btn", style="background-color: #001f3f; color:

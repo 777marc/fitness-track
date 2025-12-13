@@ -29,14 +29,14 @@ endblock %} {% block content %}
                 </p>
                 <div class="d-flex gap-2">
                   <a
-                    href="{{ url_for('view_custom_workout', id=workout.id) }}"
+                    href="{{ url_for('custom_workouts.view_custom_workout', id=workout.id) }}"
                     class="btn btn-sm btn-primary"
                   >
                     <i class="bi bi-eye"></i> View
                   </a>
                   <form
                     method="POST"
-                    action="{{ url_for('delete_custom_workout', id=workout.id) }}"
+                    action="{{ url_for('custom_workouts.delete_custom_workout', id=workout.id) }}"
                     style="display: inline"
                   >
                     <button

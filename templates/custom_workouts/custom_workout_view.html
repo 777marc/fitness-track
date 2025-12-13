@@ -8,7 +8,10 @@ Tracker{% endblock %} {% block content %}
           <h3 class="mb-0">
             <i class="bi bi-dumbbell"></i> {{ workout.name }}
           </h3>
-          <a href="{{ url_for('workout_designer') }}" class="btn btn-secondary">
+          <a
+            href="{{ url_for('custom_workouts.workout_designer') }}"
+            class="btn btn-secondary"
+          >
             <i class="bi bi-arrow-left"></i> Back
           </a>
         </div>
@@ -74,12 +77,15 @@ Tracker{% endblock %} {% block content %}
         {% endfor %}
 
         <div class="d-flex justify-content-between mt-4">
-          <a href="{{ url_for('workout_designer') }}" class="btn btn-secondary">
+          <a
+            href="{{ url_for('custom_workouts.workout_designer') }}"
+            class="btn btn-secondary"
+          >
             <i class="bi bi-arrow-left"></i> Back to Designer
           </a>
           <form
             method="POST"
-            action="{{ url_for('delete_custom_workout', id=workout.id) }}"
+            action="{{ url_for('custom_workouts.delete_custom_workout', id=workout.id) }}"
             style="display: inline"
           >
             <button
